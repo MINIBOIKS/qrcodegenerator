@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #F5F5F5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #F5F5F5;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(135, 206, 235, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4682B4;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4682B4;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #B0C4DE;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background-color: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #87CEEB;
+            box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(135, 206, 235, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .qr-result {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .qr-result.show {
+            display: block;
+        }
+
+        #qrImage {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: 1px solid #B0C4DE;
+            background-color: white;
+            padding: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #4682B4 0%, #5F9EA0 100%);
+            margin-top: 15px;
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 5px 20px rgba(70, 130, 180, 0.4);
+        }
+
+        .error {
+            color: #DC143C;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            background-color: rgba(220, 20, 60, 0.1);
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #DC143C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔲 QR Code Generator</h1>
+        
+        <div class="input-group">
+            <label for="urlInput">Enter Website URL:</label>
+            <input 
+                type="text" 
+                id="urlInput" 
+                placeholder="https://example.com"
+                value="https://www.google.com"
+            >
+        </div>
+
+        <button onclick="generateQR()">Generate QR Code</button>
+        
+        <div id="error" class="error"></div>
+
+        <div id="qrResult" class="qr-result">
+            <img id="qrImage" alt="QR Code">
+            <button class="download-btn" onclick="downloadQR()">Download QR Code</button>
+        </div>
+    </div>
+
+    <script>
+        function isValidURL(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function generateQR() {
+            const urlInput = document.getElementById('urlInput');
+            const qrResult = document.getElementById('qrResult');
+            const qrImage = document.getElementById('qrImage');
+            const errorDiv = document.getElementById('error');
+            
+            const url = urlInput.value.trim();
+            
+            errorDiv.textContent = '';
+            
+            if (!url) {
+                errorDiv.textContent = 'Please enter a URL';
+                qrResult.classList.remove('show');
+                return;
+            }
+            
+            if (!isValidURL(url)) {
+                errorDiv.textContent = 'Please enter a valid URL (must start with http:// or https://)';
+                qrResult.classList.remove('show');
+                return;
+            }
+            
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+            
+            qrImage.src = qrApiUrl;
+            qrResult.classList.add('show');
+        }
+
+        function downloadQR() {
+            const qrImage = document.getElementById('qrImage');
+            const url = qrImage.src;
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'qrcode.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQR();
+            }
+        });
+    </script>
+</body>
+</html>
